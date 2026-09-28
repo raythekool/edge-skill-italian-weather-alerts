@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulatore Skill — Italian Weather Alerts</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f0f2f5;
+      color: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 520px;
+      width: 100%;
+    }
+    .panel {
+      background: #fff;
+      padding: 18px;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 20px;
+      margin-top: 0;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    input, select, button {
+      font-size: 15px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    input {
+      flex: 1;
+    }
+    select {
+      width: 120px;
+    }
+    button {
+      background: #0066cc;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #0052a3;
+    }
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    .preview-frame {
+      width: 100%;
+      height: 780px;
+      border: none;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      background: #fff;
+    }
+    .log-box {
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      background: #222;
+      color: #eee;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+      max-height: 120px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="panel">
+    <h1 style="display:flex; align-items:center; gap:10px;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" width="28" height="19" style="border-radius:3px; box-shadow:0 1px 3px rgba(0,0,0,0.25); flex-shrink:0;">
+        <rect width="1" height="2" fill="#009246"/>
+        <rect width="1" height="2" x="1" fill="#ffffff"/>
+        <rect width="1" height="2" x="2" fill="#ce2b37"/>
+      </svg>
+      <span>Simulatore Google AI Edge Gallery</span>
+    </h1>
+    <p style="margin: 0 0 14px; font-size: 14px; color: #666;">
+      Testa la skill con l'interrogazione live in tempo reale ai bollettini ufficiali della Protezione Civile.
+    </p>
+    <div class="controls">
+      <div class="row">
+        <input type="text" id="loc" value="Sicilia" placeholder="Località (es. Sicilia, Bologna, Milano, Italia)">
+        <select id="date">
+          <option value="today">Oggi</option>
+          <option value="tomorrow" selected>Domani</option>
+        </select>
+      </div>
+      <button id="runBtn" onclick="runSimulation()">Esegui Query Skill</button>
+      <div id="log" class="log-box" style="display:none;"></div>
+    </div>
+  </div>
+
+  <iframe id="phoneView" class="preview-frame" src="skills/italian-weather-alerts/assets/webview.html"></iframe>
+</div>
+
+<!-- Carica lo script di runtime della skill -->
+<iframe id="skillSandbox" src="skills/italian-weather-alerts/scripts/index.html" style="display:none;" onload="onSandboxReady()"></iframe>
+
+<script>
+  let sandboxReady = false;
+  function onSandboxReady() {
+    sandboxReady = true;
+    document.getElementById('log').style.display = 'block';
+    document.getElementById('log').textContent = 'Pronto. Clicca su "Esegui Query Skill" per interrogare la Protezione Civile.';
+  }
+
+  async function runSimulation() {
+    const loc = document.getElementById('loc').value.trim() || 'Italia';
+    const date = document.getElementById('date').value;
+    const btn = document.getElementById('runBtn');
+    const log = document.getElementById('log');
+    const iframe = document.getElementById('phoneView');
+
+    log.style.display = 'block';
+    log.textContent = `Interrogazione bollettini per "${loc}" (${date})...`;
+    btn.disabled = true;
+
+    try {
+      const sandbox = document.getElementById('skillSandbox').contentWindow;
+      if (!sandbox || !sandbox.ai_edge_gallery_get_result) {
+        throw new Error('Runtime della skill non ancora inizializzato.');
+      }
+
+      const inputJson = JSON.stringify({ location: loc, date: date });
+      const rawResponse = await sandbox.ai_edge_gallery_get_result(inputJson);
+      const parsed = JSON.parse(rawResponse);
+
+      if (parsed.error) {
+        log.textContent = `Errore: ${parsed.error}`;
+      } else {
+        const resultData = JSON.parse(parsed.result);
+        log.textContent = `✅ Risultato ricevuto!\nBollettino: ${resultData.bulletin?.name || 'Live'}\nAllerte trovate: ${resultData.alerts?.length}\nStato: ${resultData.status}`;
+        
+        // Risolvi il percorso relativo della webview rispetto alla cartella scripts
+        const webviewUrl = 'skills/italian-weather-alerts/assets/' + parsed.webview.url.replace(/^..\//, '').replace(/^assets\//, '');
+        iframe.src = webviewUrl;
+      }
+    } catch (err) {
+      log.textContent = `Errore durante il test: ${err.message}`;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>

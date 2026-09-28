@@ -1,4 +1,4 @@
-# 🇮🇹 Italian Weather Alerts Skill
+# <img src="assets/flag-it.svg" width="28" height="19" alt="Bandiera Italiana" style="vertical-align: middle;"> Italian Weather Alerts Skill
 
 This folder contains the initial Google AI Edge Gallery JavaScript skill.
 

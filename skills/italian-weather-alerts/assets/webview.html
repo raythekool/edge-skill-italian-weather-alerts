@@ -55,8 +55,14 @@ p { margin:7px 0; }
   app.innerHTML = `
     <section class="card">
       <div class="header">
-        <div>
-          <h1>🇮🇹 Allerte Protezione Civile</h1>
+          <h1 style="display:flex; align-items:center; gap:8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" width="26" height="18" style="border-radius:3px; box-shadow:0 1px 3px rgba(0,0,0,0.25); flex-shrink:0;">
+              <rect width="1" height="2" fill="#009246"/>
+              <rect width="1" height="2" x="1" fill="#ffffff"/>
+              <rect width="1" height="2" x="2" fill="#ce2b37"/>
+            </svg>
+            <span>Allerte Protezione Civile</span>
+          </h1>
           <h2>${escapeHtml(payload.location || "Italia")}</h2>
         </div>
         <span class="badge ${status === "live" ? "live" : "demo"}">${escapeHtml(statusText)}</span>

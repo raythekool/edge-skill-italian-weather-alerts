@@ -1,4 +1,4 @@
-# 🇮🇹 Italian Weather Alerts for Google AI Edge Gallery
+# <img src="skills/italian-weather-alerts/assets/flag-it.svg" width="28" height="19" alt="Bandiera Italiana" style="vertical-align: middle;"> Italian Weather Alerts for Google AI Edge Gallery
 
 > A Google AI Edge Gallery skill for querying official Italian Civil Protection weather alerts and presenting the results in a clear, visual mobile dashboard.
 
@@ -26,7 +26,7 @@ The following mockup illustrates the intended response experience inside an Edge
 
 ## 🎯 Main goals
 
-- 🇮🇹 Support all Italian regions and autonomous provinces.
+- <img src="skills/italian-weather-alerts/assets/flag-it.svg" width="18" height="12" alt="Italia" style="vertical-align: middle;"> Support all Italian regions and autonomous provinces.
 - 🗺️ Map municipalities and locations to official Civil Protection alert zones.
 - 🚦 Clearly display yellow, orange, and red alert levels.
 - 🌧️ Separate hydrogeological, hydraulic, thunderstorm, and other supported risks.
