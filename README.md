@@ -36,13 +36,12 @@ The following mockup illustrates the intended response experience inside an Edge
 - ♿ Use text, labels, icons, and patterns in addition to colors.
 - 🛡️ Never infer an official alert from a generic weather forecast.
 
-## 🧱 Planned architecture
+## 🧱 Architecture
 
-1. A scheduled GitHub Actions workflow retrieves and normalizes official public data.
-2. A compact national JSON snapshot is published for the skill to query.
-3. The Edge Gallery JavaScript skill filters the snapshot by location and date.
-4. The skill returns structured data plus an inline HTML dashboard.
-5. The interface provides detail cards, an Italy map, source metadata, and stale-data warnings.
+1. **Direct client-side query (on-demand)**: The Edge Gallery JavaScript skill queries the official Open Data repository of the Italian Civil Protection ([`pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica`](https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica)) directly from the device.
+2. **Zero backend dependency**: No private server, proxy, or scheduled workflow required; the skill runs 100% autonomously on-device for any user.
+3. **Local caching & parsing**: The skill fetches the latest official national bulletin JSON (~3 KB), caches it locally in `sessionStorage`/`localStorage`, and parses risks, zones, and severity levels.
+4. **Visual inline dashboard**: Returns structured data to the local AI model plus an inline mobile WebView dashboard including detail cards, source metadata, and the official daily national alert map preview.
 
 ## 📚 Data principles
 

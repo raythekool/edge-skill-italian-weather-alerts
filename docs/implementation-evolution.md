@@ -35,14 +35,14 @@ Suggested fields:
 
 Use explicit levels such as `none`, `yellow`, `orange`, and `red`; do not encode severity only as a color.
 
-## Phase 2 — Official data ingestion
+## Phase 2 — Decentralized on-demand data ingestion
 
-- Start with the national Civil Protection criticality/alert bulletins.
-- Inspect the official file formats and publication conventions.
-- Select the latest valid bulletin and preserve its issue timestamp.
-- Handle multiple publications, corrections, missing files, and publication delays.
-- Keep the original source URL next to every normalized record.
-- Add fixture files for historical bulletins so parsing is reproducible.
+- Query the national Civil Protection repository (`pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica`) directly from the client JS runtime.
+- Fetch the daily lightweight summary JSON (~3 KB) on-demand without intermediate servers or private GitHub Actions.
+- Parse `html_descrition` to extract risks, severity levels (none, yellow, orange, red), and affected regions/zones.
+- Retrieve the official daily national criticality map preview image (`files/preview/YYYYMMDD_HHMM_oggi.png` and `domani.png`).
+- Implement client-side `sessionStorage`/`localStorage` caching so multiple queries in a session do not repeat network calls.
+- Maintain a graceful fallback to local fixtures when offline or if network limits are reached.
 
 ## Phase 3 — Italy-wide geographic resolution
 

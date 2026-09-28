@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,7 +7,8 @@
 </head>
 <body>
 <script>
-  const LIVE_DATA_URL = "";
+  const DPC_REPO_RAW = "https://raw.githubusercontent.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica/master";
+  const DPC_API_LATEST_COMMIT = "https://api.github.com/repos/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica/commits?per_page=1";
   const DEMO_DATA_URL = "../assets/demo-data.json";
 
   window["ai_edge_gallery_get_result"] = async (data) => {
@@ -16,23 +17,85 @@
       const location = String(request.location || "Italy").trim();
       const date = request.date || "today";
       const includeForecast = Boolean(request.includeForecast);
-      const source = LIVE_DATA_URL || DEMO_DATA_URL;
-      const response = await fetch(source, { cache: "no-store" });
-      if (!response.ok) throw new Error(`Data request failed with HTTP ${response.status}`);
-      const dataset = await response.json();
-      const matches = filterAlerts(dataset.alerts || [], location, date);
-      const dataStatus = LIVE_DATA_URL ? "live" : "demo";
+
+      let bulletinData = null;
+      let dataStatus = "live";
+      let warnings = [];
+
+      try {
+        bulletinData = await fetchLiveDpcBulletin();
+      } catch (err) {
+        console.warn("Live DPC fetch failed, falling back to bundled demo data:", err);
+        dataStatus = "demo";
+        warnings.push("Recupero dati live non riuscito; visualizzazione dati fallback (" + err.message + ")");
+        const demoRes = await fetch(DEMO_DATA_URL, { cache: "no-store" });
+        if (demoRes.ok) {
+          bulletinData = await demoRes.json();
+        }
+      }
+
+      if (!bulletinData) {
+        throw new Error("Impossibile recuperare i dati dei bollettini di allerta.");
+      }
+
+      let alerts = [];
+      let bulletinInfo = null;
+      let mapUrl = null;
+
+      if (dataStatus === "live") {
+        const isToday = (date === "today");
+        const dayData = isToday ? bulletinData.today : bulletinData.tomorrow;
+        const html = dayData?.html_descrition || "";
+        const allAlerts = parseAlertHtml(html, date);
+        alerts = filterAlerts(allAlerts, location);
+
+        bulletinInfo = {
+          name: bulletinData.name || "Bollettino di Criticità Nazionale",
+          issuedAt: bulletinData.date || new Date().toISOString(),
+          validDay: date
+        };
+
+        if (bulletinData._baseName) {
+          const mapSuffix = isToday ? "oggi.png" : "domani.png";
+          mapUrl = `${DPC_REPO_RAW}/files/preview/${bulletinData._baseName}_${mapSuffix}`;
+        }
+      } else {
+        // Fallback su dati dimostrativi
+        alerts = filterAlerts(bulletinData.alerts || [], location);
+        bulletinInfo = bulletinData.bulletin || { issuedAt: "demo" };
+      }
+
+      // Se non ci sono allerte per la zona richiesta o a livello nazionale
+      if (alerts.length === 0) {
+        alerts.push({
+          day: date,
+          region: location,
+          zone: "Tutto il territorio",
+          risk: "Nessun rischio significativo",
+          level: "none",
+          description: "Assenza di fenomeni significativi prevedibili / Nessuna allerta di criticità per la data selezionata."
+        });
+      }
+
       const payload = {
         status: dataStatus,
         location,
         date,
         includeForecast,
-        dataQuality: dataset.dataQuality || { status: "unknown", warnings: [] },
-        bulletin: dataset.bulletin || null,
-        alerts: matches,
-        sourceUrls: dataset.sourceUrls || [],
-        generatedAt: dataset.generatedAt || null
+        dataQuality: {
+          status: dataStatus,
+          warnings
+        },
+        bulletin: bulletinInfo,
+        alerts,
+        mapUrl,
+        sourceUrls: [
+          "https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica",
+          "https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/"
+        ],
+        generatedAt: new Date().toISOString()
       };
+
       const webviewUrl = `../assets/webview.html?payload=${encodeURIComponent(JSON.stringify(payload))}`;
       return JSON.stringify({
         result: JSON.stringify(payload),
@@ -44,23 +107,115 @@
     }
   };
 
+  async function fetchLiveDpcBulletin() {
+    const todayKey = "dpc_bulletin_" + new Date().toISOString().slice(0, 10);
+    try {
+      const cached = sessionStorage.getItem(todayKey) || localStorage.getItem(todayKey);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (_) {}
+
+    const commitsRes = await fetch(DPC_API_LATEST_COMMIT, {
+      headers: { "Accept": "application/vnd.github.v3+json" }
+    });
+    if (!commitsRes.ok) throw new Error("DPC commit fetch error HTTP " + commitsRes.status);
+    const commits = await commitsRes.json();
+    if (!commits || !commits[0]) throw new Error("Nessun commit trovato nel repository DPC");
+
+    const commitDetailRes = await fetch(commits[0].url, {
+      headers: { "Accept": "application/vnd.github.v3+json" }
+    });
+    if (!commitDetailRes.ok) throw new Error("DPC commit details error HTTP " + commitDetailRes.status);
+    const commitDetail = await commitDetailRes.json();
+
+    let baseName = "";
+    for (const f of commitDetail.files || []) {
+      const m = f.filename.match(/files\/(?:preview\/)?(\d{8}_\d{4})(?:_domani|_oggi)?\.(?:json|png)$/);
+      if (m) {
+        baseName = m[1];
+        break;
+      }
+    }
+
+    if (!baseName) {
+      throw new Error("Impossibile estrarre il timestamp del bollettino dal commit DPC");
+    }
+
+    const rawBulletinUrl = `${DPC_REPO_RAW}/files/${baseName}.json`;
+    const bulletinRes = await fetch(rawBulletinUrl, { cache: "no-store" });
+    if (!bulletinRes.ok) throw new Error("DPC raw bulletin fetch error HTTP " + bulletinRes.status);
+    const data = await bulletinRes.json();
+    data._baseName = baseName;
+
+    try {
+      sessionStorage.setItem(todayKey, JSON.stringify(data));
+    } catch (_) {}
+
+    return data;
+  }
+
+  function parseAlertHtml(html, dayName) {
+    const alerts = [];
+    if (!html || html.includes("ASSENZA DI FENOMENI") || html.includes("NESSUNA ALLERTA")) {
+      return alerts;
+    }
+    const clean = html.replace(/['’]/g, "'");
+    const headerRegex = /<b>(?:ELEVATA|MODERATA|ORDINARIA)\s+CRITICITA'\s+PER\s+([^<:]+?)\s*\/\s*ALLERTA\s+([A-Z]+):<\/b>/gi;
+    
+    const indices = [];
+    let headerMatch;
+    while ((headerMatch = headerRegex.exec(clean)) !== null) {
+      indices.push({
+        riskType: headerMatch[1].trim(),
+        color: headerMatch[2].trim().toLowerCase(),
+        index: headerMatch.index,
+        length: headerMatch[0].length
+      });
+    }
+
+    for (let i = 0; i < indices.length; i++) {
+      const cur = indices[i];
+      const start = cur.index + cur.length;
+      const end = (i + 1 < indices.length) ? indices[i + 1].index : clean.length;
+      const block = clean.substring(start, end);
+
+      const level = cur.color.includes("ross") ? "red" : cur.color.includes("aranc") ? "orange" : cur.color.includes("giall") ? "yellow" : "none";
+
+      const regMatches = [...block.matchAll(/<b>([^<:]+)<\/b>\s*:\s*([^<]+)/g)];
+      for (const m of regMatches) {
+        const region = m[1].trim();
+        const zones = m[2].trim().replace(/<br\s*\/?>/gi, "").split(",").map(z => z.trim()).filter(Boolean);
+        for (const zone of zones) {
+          alerts.push({
+            day: dayName,
+            region: region,
+            zone: zone,
+            risk: cur.riskType,
+            level: level,
+            description: `Allerta ${cur.color} per ${cur.riskType.toLowerCase()} (${region} - ${zone})`
+          });
+        }
+      }
+    }
+    return alerts;
+  }
+
   function normalize(value) {
     return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   }
 
-  function filterAlerts(alerts, location, date) {
+  function filterAlerts(alerts, location) {
     const query = normalize(location);
-    const wantedDate = date === "today" || date === "tomorrow" ? date : date;
+    if (!query || query === "italy" || query === "italia" || query === "tutta italia") {
+      return alerts;
+    }
     return alerts.filter(alert => {
       const searchable = normalize([
-        alert.date, alert.day, alert.municipality, alert.province,
-        alert.region, alert.zone, alert.zoneId, alert.risk, alert.level
+        alert.day, alert.municipality, alert.province,
+        alert.region, alert.zone, alert.zoneId, alert.risk, alert.level, alert.description
       ].join(" "));
-      const dateMatches = wantedDate === "today" || wantedDate === "tomorrow"
-        ? alert.day === wantedDate
-        : alert.date === wantedDate;
-      const locationMatches = query === "italy" || query === "italia" || searchable.includes(query);
-      return dateMatches && locationMatches;
+      return searchable.includes(query);
     });
   }
 </script>

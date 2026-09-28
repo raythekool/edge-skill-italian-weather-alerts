@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,19 +10,29 @@
 * { box-sizing:border-box; }
 body { margin:0; padding:16px; background:var(--bg); color:var(--text); font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 main { max-width:680px; margin:auto; }
-h1 { margin:0 0 4px; font-size:28px; }
-h2 { margin:0; font-size:21px; }
+h1 { margin:0 0 4px; font-size:26px; }
+h2 { margin:0; font-size:19px; }
 p { margin:7px 0; }
 .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; margin:12px 0; box-shadow:0 2px 8px #00000012; }
 .header { display:flex; justify-content:space-between; gap:12px; align-items:start; }
 .badge { border-radius:10px; padding:7px 10px; font-weight:700; font-size:12px; white-space:nowrap; }
-.live { background:#d8f5df; color:#176b2b; }.demo { background:#ffe6b8; color:#7a4700; }.stale { background:#ffd9d9; color:#8b1111; }
+.live { background:#d8f5df; color:#176b2b; }
+.demo { background:#ffe6b8; color:#7a4700; }
+.stale { background:#ffd9d9; color:#8b1111; }
 .alert { border-left:7px solid #999; padding:13px; border-radius:12px; margin-top:10px; background:#00000008; }
-.alert.yellow { border-color:#f0c400; }.alert.orange { border-color:#f28c00; }.alert.red { border-color:#d71920; }
-.level { font-weight:800; }.yellow .level { color:#9b7b00; }.orange .level { color:#c66e00; }.red .level { color:#c1121f; }
+.alert.none { border-color:#28a745; }
+.alert.yellow { border-color:#f0c400; }
+.alert.orange { border-color:#f28c00; }
+.alert.red { border-color:#d71920; }
+.level { font-weight:800; }
+.none .level { color:#1e7e34; }
+.yellow .level { color:#9b7b00; }
+.orange .level { color:#c66e00; }
+.red .level { color:#c1121f; }
 .meta { color:var(--muted); font-size:12px; line-height:1.45; }
-.map { height:170px; border-radius:14px; background:linear-gradient(145deg,#e6e7eb,#cfd2d8); display:flex; align-items:center; justify-content:center; color:#555; font-weight:700; letter-spacing:.3px; }
-.warn { background:#fff2cc; color:#694d00; border:1px solid #e3bd4d; border-radius:12px; padding:10px; }
+.map-box { border-radius:14px; overflow:hidden; border:1px solid var(--line); margin-top:10px; background:#00000008; }
+.map-img { width:100%; display:block; height:auto; }
+.warn { background:#fff2cc; color:#694d00; border:1px solid #e3bd4d; border-radius:12px; padding:10px; margin-top:10px; }
 @media (prefers-color-scheme:dark) { .warn { background:#4b3b12; color:#ffe8a3; border-color:#856d24; } }
 </style>
 </head>
@@ -37,26 +47,76 @@ p { margin:7px 0; }
   const status = payload.status || "unknown";
   const quality = payload.dataQuality || {};
   const maxLevel = alerts.reduce((current, item) => rank(item.level) > rank(current) ? item.level : current, "none");
-  const statusText = status === "demo" ? "DEMO DATA — NOT LIVE" : status.toUpperCase();
+  const statusText = status === "live" ? "DATI UFFICIALI DPC (LIVE)" : "DATI DIMOSTRATIVI";
   const source = (payload.sourceUrls || [])[0] || "";
-  const warning = status === "demo" ? "This dashboard uses fictional development data. Do not use it for emergency decisions." : (quality.warnings || []).join(" ");
+  const warning = (quality.warnings || []).join(" ");
+  const dateLabel = payload.date === "tomorrow" ? "Domani" : "Oggi";
+
   app.innerHTML = `
     <section class="card">
-      <div class="header"><div><h1>🇮🇹 Italian Weather Alerts</h1><h2>${escapeHtml(payload.location || "Italy")}</h2></div><span class="badge ${status === "live" ? "live" : "demo"}">${escapeHtml(statusText)}</span></div>
-      <p><strong>${escapeHtml(labelLevel(maxLevel))}</strong> · ${escapeHtml(payload.date || "today")}</p>
+      <div class="header">
+        <div>
+          <h1>🇮🇹 Allerte Protezione Civile</h1>
+          <h2>${escapeHtml(payload.location || "Italia")}</h2>
+        </div>
+        <span class="badge ${status === "live" ? "live" : "demo"}">${escapeHtml(statusText)}</span>
+      </div>
+      <p style="margin-top:10px;">
+        <strong>${escapeHtml(labelLevel(maxLevel))}</strong> · <span>${escapeHtml(dateLabel)}</span>
+      </p>
       ${warning ? `<div class="warn">⚠️ ${escapeHtml(warning)}</div>` : ""}
     </section>
-    <section class="card"><h2>Risk details</h2>${alerts.length ? alerts.map(renderAlert).join("") : `<p>No matching alert record was found in the dataset.</p>`}</section>
-    <section class="card"><h2>Italy overview</h2><div class="map">🗺️ National alert map — planned data layer</div><p class="meta">The production version will display official alert zones and selectable details for all Italian regions and autonomous provinces.</p></section>
-    <section class="card"><h2>Source and freshness</h2><p class="meta">Bulletin: ${escapeHtml(payload.bulletin?.issuedAt || "not available")}<br>Generated: ${escapeHtml(payload.generatedAt || "not available")}<br>Source: ${source ? `<a href="${escapeAttr(source)}">official source ↗</a>` : "not configured"}</p></section>`;
+
+    <section class="card">
+      <h2>Dettaglio Rischi e Allerte</h2>
+      ${alerts.length ? alerts.map(renderAlert).join("") : `<p>Nessun record di allerta registrato.</p>`}
+    </section>
+
+    <section class="card">
+      <h2>Mappa Nazionale di Criticità</h2>
+      ${payload.mapUrl ? `
+        <div class="map-box">
+          <img src="${escapeAttr(payload.mapUrl)}" alt="Mappa ufficiale allerta Protezione Civile" class="map-img" loading="lazy">
+        </div>
+        <p class="meta" style="margin-top:8px;">Mappa ufficiale di criticità pubblicata dal Dipartimento della Protezione Civile per ${escapeHtml(dateLabel.toLowerCase())}.</p>
+      ` : `
+        <div class="map-box" style="padding:40px; text-align:center; color:var(--muted);">🗺️ Mappa cartografica non disponibile per questa selezione.</div>
+      `}
+    </section>
+
+    <section class="card">
+      <h2>Fonte e Aggiornamento</h2>
+      <p class="meta">
+        Bollettino: ${escapeHtml(payload.bulletin?.name || payload.bulletin?.issuedAt || "Non disponibile")}<br>
+        Emesso il: ${escapeHtml(payload.bulletin?.issuedAt || "Non disponibile")}<br>
+        Fonte dati: ${source ? `<a href="${escapeAttr(source)}" target="_blank" rel="noopener">Dipartimento della Protezione Civile ↗</a>` : "Protezione Civile"}
+      </p>
+    </section>`;
 
   function renderAlert(item) {
     const level = normalize(item.level || "none");
-    return `<article class="alert ${escapeAttr(level)}"><div class="level">${escapeHtml(item.risk || "Risk")} — ${escapeHtml(labelLevel(item.level))}</div><div>${escapeHtml(item.description || "No description available.")}</div><div class="meta">Zone: ${escapeHtml(item.zone || "not available")} · Valid: ${escapeHtml(item.validFrom || "-")} to ${escapeHtml(item.validTo || "-")}</div></article>`;
+    const riskTitle = item.risk || "Criticità";
+    return `
+      <article class="alert ${escapeAttr(level)}">
+        <div class="level">${escapeHtml(riskTitle)} — ${escapeHtml(labelLevel(item.level))}</div>
+        <div>${escapeHtml(item.description || "Nessuna descrizione disponibile.")}</div>
+        <div class="meta" style="margin-top:4px;">
+          ${item.region ? `Regione: <strong>${escapeHtml(item.region)}</strong>` : ""}
+          ${item.zone ? ` · Zona: ${escapeHtml(item.zone)}` : ""}
+        </div>
+      </article>`;
   }
+
   function rank(level) { return ({ none:0, yellow:1, orange:2, red:3 })[normalize(level)] ?? 0; }
   function normalize(value) { return String(value || "").toLowerCase(); }
-  function labelLevel(level) { return ({ none:"NO ALERT", yellow:"YELLOW ALERT", orange:"ORANGE ALERT", red:"RED ALERT" })[normalize(level)] || "STATUS UNKNOWN"; }
+  function labelLevel(level) { 
+    return ({
+      none: "NESSUNA ALLERTA",
+      yellow: "ALLERTA GIALLA",
+      orange: "ALLERTA ARANCIONE",
+      red: "ALLERTA ROSSA"
+    })[normalize(level)] || "STATO NON DISPONIBILE"; 
+  }
   function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c])); }
   function escapeAttr(value) { return escapeHtml(value).replace(/javascript:/gi, ""); }
 </script>

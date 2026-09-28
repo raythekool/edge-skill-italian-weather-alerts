@@ -21,9 +21,10 @@ https://<username>.github.io/edge-skill-italian-weather-alerts/skills/italian-we
 
 The repository must contain `.nojekyll` so GitHub Pages serves `SKILL.md` without Jekyll conversion.
 
-## Current limitations
+## Features & Data Sources
 
-- Live official-data ingestion is not configured yet.
-- The bundled data is fictional and exists only to validate the UI flow.
-- The map is a visual placeholder; production geometry and zone mapping are still required.
-- The skill is read-only and does not use device location automatically.
+- **Live Official Ingestion**: Queries the official DPC Open Data repository (`pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica`) directly on-demand via client-side fetch.
+- **Zero Backend Required**: No private server or cron job needed; users fetch the latest ~3 KB official bulletin directly.
+- **Official National Map**: Dynamically embeds the official Civil Protection alert map preview inside the WebView dashboard.
+- **Local Fallback**: Automatically falls back to bundled fixtures (`assets/demo-data.json`) if offline or network requests fail.
+- **Privacy & Read-Only**: The skill is strictly read-only and does not track personal user location.
