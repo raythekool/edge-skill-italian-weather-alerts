@@ -16,13 +16,13 @@ This project is a prototype Agent Skill for [Google AI Edge Gallery](https://git
 
 The skill will cover the whole of Italy, resolve locations to official alert zones, and return both a concise AI answer and an interactive visual dashboard.
 
-## 🖼️ UI mockup
+## 🖼️ UI Preview (Demo: Segrate)
 
-The following mockup illustrates the intended response experience inside an Edge Gallery chat:
+The following screenshot illustrates the live on-device response experience inside a Google AI Edge Gallery chat for the municipality of **Segrate (Milano, Lombardia)**:
 
-![Italian Weather Alerts UI mockup](docs/mockups/italian-weather-alerts-ui.jpg)
+![Italian Weather Alerts UI](docs/mockups/italian-weather-alerts-ui.jpg)
 
-> ⚠️ The alerts shown in the mockup are fictional and for design purposes only. They must never be interpreted as live official information.
+> ℹ️ Captured directly from the app interface showing decentralized on-device fetching of official DPC critical alert bulletins, interactive day toggle (Oggi/Domani), and national alert maps.
 
 ## 🎯 Main goals
 

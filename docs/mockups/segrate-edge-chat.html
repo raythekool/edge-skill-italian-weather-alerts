@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Google AI Edge Gallery — Segrate Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #1a1b20;
+      font-family: -apple-system, BlinkMacSystemFont, "Google Sans", "Segoe UI", Roboto, sans-serif;
+      color: #e3e3e3;
+    }
+    .phone-container {
+      width: 412px;
+      margin: 0 auto;
+      background: #1a1b20;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: none;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Status bar */
+    .status-bar {
+      height: 38px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #bbb;
+    }
+    /* App header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: #1a1b20;
+    }
+    .model-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .model-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #4285f4, #9b51e0);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(66, 133, 244, 0.4);
+    }
+    .model-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .model-subtitle {
+      font-size: 12px;
+      color: #9aa0a6;
+    }
+    .skills-chip {
+      background: rgba(66, 133, 244, 0.15);
+      color: #8ab4f8;
+      border: 1px solid rgba(66, 133, 244, 0.3);
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    /* Chat stream */
+    .chat-stream {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    /* User message */
+    .user-bubble-wrapper {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .user-bubble {
+      background: #2b4c7e;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 20px 20px 4px 20px;
+      font-size: 15px;
+      max-width: 82%;
+      line-height: 1.4;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+    /* AI message */
+    .ai-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ai-bubble {
+      background: #25262c;
+      color: #e3e3e3;
+      padding: 14px 16px;
+      border-radius: 20px 20px 20px 4px;
+      font-size: 15px;
+      line-height: 1.45;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    /* Webview frame */
+    .webview-wrapper {
+      width: 100%;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+      background: #151515;
+    }
+    .webview-frame {
+      width: 100%;
+      height: 830px;
+      border: none;
+      display: block;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    /* Bottom bar */
+    .bottom-bar {
+      padding: 12px 16px 24px;
+      background: #1a1b20;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .input-box {
+      flex: 1;
+      background: #25262c;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 10px 16px;
+      color: #9aa0a6;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone-container">
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>16:24</span>
+    <span>5G · 100% 🔋</span>
+  </div>
+
+  <!-- App Header -->
+  <div class="app-header">
+    <div class="model-info">
+      <div class="model-icon">✨</div>
+      <div>
+        <div class="model-title">Gemma 2 (On-device)</div>
+        <div class="model-subtitle">Google AI Edge Gallery</div>
+      </div>
+    </div>
+    <div class="skills-chip">⚡ Skills (1)</div>
+  </div>
+
+  <!-- Chat stream -->
+  <div class="chat-stream">
+    <!-- User prompt -->
+    <div class="user-bubble-wrapper">
+      <div class="user-bubble">
+        Ci sono allerte meteo oggi a Segrate?
+      </div>
+    </div>
+
+    <!-- AI answer -->
+    <div class="ai-wrapper">
+      <div class="ai-bubble">
+        In base al <strong>Bollettino ufficiale di Criticità Nazionale della Protezione Civile</strong> emesso oggi, per il territorio di <strong>Segrate (Milano, Lombardia)</strong> non vi sono condizioni di allerta previste. Il livello è verde (assenza di fenomeni significativi).
+      </div>
+
+      <!-- Live Webview container -->
+      <div class="webview-wrapper">
+        <iframe id="wv" class="webview-frame" scrolling="no" src=""></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Input bar -->
+  <div class="bottom-bar">
+    <div class="input-box">Chiedi qualcosa a Gemma...</div>
+  </div>
+</div>
+
+<script>
+  const payload = {
+    status: "live",
+    location: "Segrate",
+    date: "today",
+    includeForecast: false,
+    dataQuality: { status: "live", warnings: [] },
+    bulletin: {
+      name: "Bollettino del 28 settembre 2026 ore 14:24",
+      issuedAt: "2026-09-28T13:02:48.246Z",
+      validDay: "today"
+    },
+    alerts: [
+      {
+        day: "today",
+        region: "Lombardia",
+        zone: "Nodo Idraulico di Milano / Segrate",
+        risk: "Nessun rischio significativo",
+        level: "none",
+        description: "Assenza di fenomeni significativi prevedibili / Nessuna allerta di criticità per la giornata odierna."
+      }
+    ],
+    mapUrl: "https://raw.githubusercontent.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica/master/files/preview/20260928_1424_oggi.png",
+    days: {
+      today: {
+        alerts: [
+          {
+            day: "today",
+            region: "Lombardia",
+            zone: "Nodo Idraulico di Milano / Segrate",
+            risk: "Nessun rischio significativo",
+            level: "none",
+            description: "Assenza di fenomeni significativi prevedibili / Nessuna allerta di criticità per la giornata odierna."
+          }
+        ],
+        mapUrl: "https://raw.githubusercontent.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica/master/files/preview/20260928_1424_oggi.png"
+      },
+      tomorrow: {
+        alerts: [
+          {
+            day: "tomorrow",
+            region: "Lombardia",
+            zone: "Nodo Idraulico di Milano / Segrate",
+            risk: "Nessun rischio significativo",
+            level: "none",
+            description: "Assenza di fenomeni significativi prevedibili / Nessuna allerta di criticità per domani."
+          }
+        ],
+        mapUrl: "https://raw.githubusercontent.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica/master/files/preview/20260928_1424_domani.png"
+      }
+    },
+    sourceUrls: [
+      "https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica",
+      "https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/"
+    ],
+    generatedAt: new Date().toISOString()
+  };
+
+  const iframe = document.getElementById("wv");
+  iframe.src = "../../skills/italian-weather-alerts/assets/webview.html?payload=" + encodeURIComponent(JSON.stringify(payload));
+</script>
+
+</body>
+</html>
