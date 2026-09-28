@@ -10,12 +10,13 @@
 * { box-sizing:border-box; }
 body { margin:0; padding:16px; background:var(--bg); color:var(--text); font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 main { max-width:680px; margin:auto; }
-h1 { margin:0 0 4px; font-size:26px; }
-h2 { margin:0; font-size:19px; }
+h1 { margin:0; font-size:20px; line-height:1.25; }
+h2 { margin:6px 0 0; font-size:17px; }
 p { margin:7px 0; }
 .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; margin:12px 0; box-shadow:0 2px 8px #00000012; }
-.header { display:flex; justify-content:space-between; gap:12px; align-items:start; }
-.badge { border-radius:10px; padding:7px 10px; font-weight:700; font-size:12px; white-space:nowrap; }
+.header { display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap; }
+.badge { border-radius:12px; padding:4px 8px; font-weight:700; font-size:11px; white-space:nowrap; flex-shrink:0; display:inline-flex; align-items:center; gap:5px; }
+.badge::before { content:""; display:inline-block; width:6px; height:6px; border-radius:50%; background:currentColor; }
 .live { background:#d8f5df; color:#176b2b; }
 .demo { background:#ffe6b8; color:#7a4700; }
 .stale { background:#ffd9d9; color:#8b1111; }
@@ -88,7 +89,7 @@ p { margin:7px 0; }
     const status = payload.status || "unknown";
     const quality = payload.dataQuality || {};
     const maxLevel = alerts.reduce((current, item) => rank(item.level) > rank(current) ? item.level : current, "none");
-    const statusText = status === "live" ? "DATI UFFICIALI DPC (LIVE)" : "DATI DIMOSTRATIVI";
+    const statusText = status === "live" ? "DPC LIVE" : "DEMO";
     const source = (payload.sourceUrls || [])[0] || "";
     const warning = (quality.warnings || []).join(" ");
     const dateLabel = activeDay === "tomorrow" ? "Domani" : "Oggi";
