@@ -16,7 +16,7 @@ This project is a prototype Agent Skill for [Google AI Edge Gallery](https://git
 
 The skill will cover the whole of Italy, resolve locations to official alert zones, and return both a concise AI answer and an interactive visual dashboard.
 
-## 🖼️ UI Preview (Demo: Segrate)
+## 🖼️ UI Preview
 
 The following screenshot illustrates the live on-device response experience inside a Google AI Edge Gallery chat for the municipality of **Segrate (Milano, Lombardia)**:
 
