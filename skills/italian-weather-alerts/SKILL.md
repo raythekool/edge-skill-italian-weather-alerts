@@ -1,33 +1,26 @@
 ---
 name: italian-weather-alerts
-description: Queries official Italian Civil Protection weather alert bulletins and presents location-based risks for municipalities across Italy in a visual dashboard. Use when the user asks about Italian weather alerts, Civil Protection warnings, alert levels, hydrogeological or hydraulic risk, thunderstorms, or risks affecting an Italian location.
-compatibility: Designed for Google AI Edge Gallery JavaScript skills. Requires internet access for current official data. Read-only; no destructive device actions.
-license: MIT
+description: Queries official Italian Civil Protection weather alert bulletins and presents location-based risks for municipalities across Italy in a visual dashboard.
 metadata:
-  author: Marco Dodaro
-  version: "0.1.0"
   homepage: https://github.com/raythekool/edge-skill-italian-weather-alerts
-  data-scope: Italy
 ---
 
 # Italian Weather Alerts
 
 Use this skill to answer questions about official Italian Civil Protection weather alerts and related risks.
 
-## Required execution
+## Instructions
 
-Call the `run_js` tool using:
-
-- script name: `index.html`
-- data: a JSON string with:
-  - `location`: the Italian municipality, province, region, or alert zone requested by the user. String.
-  - `date`: `today`, `tomorrow`, or an ISO date (`YYYY-MM-DD`). Default to `today`.
-  - `includeForecast`: Boolean. Default to `false`. Only include this when the user explicitly asks for a normal weather forecast as well as official alerts.
+Call the `run_js` tool with the following exact parameters:
+- script name: index.html
+- data: A JSON string with the following fields:
+  - location: String. The Italian municipality, province, region, or alert zone requested by the user.
+  - date: String. "today", "tomorrow", or an ISO date (YYYY-MM-DD). Default to "today".
+  - includeForecast: Boolean. Default to false. Only include this when the user explicitly asks for a normal weather forecast as well as official alerts.
 
 Example:
-
 ```json
-{"location":"Bologna (BO)","date":"tomorrow","includeForecast":false}
+{"location":"Bologna","date":"tomorrow","includeForecast":false}
 ```
 
 ## Response requirements
@@ -43,17 +36,8 @@ Example:
 9. Never describe a generic forecast as an official alert.
 10. Include the returned webview when present.
 
-## Data and safety rules
+## Safety rules
 
-- This skill is read-only.
+- This skill is strictly read-only.
 - It must not delete files, change phone settings, send messages, create emergency reports, or perform destructive actions.
-- Current data must come from official sources configured in the script or normalized dataset.
-- During development, the script may use clearly labeled demo data when live data is not configured; it must never present demo values as live alerts.
 - In an emergency, direct the user to official Civil Protection and regional authority channels.
-
-## Examples
-
-- “Are there any alerts tomorrow in Bologna?”
-- “What is the Civil Protection risk in Vaiano, Prato?”
-- “Show Italian orange and red alerts today.”
-- “What is the difference between the alert and tomorrow’s forecast in Milan?”
