@@ -8,13 +8,13 @@
 
 ## ✨ Overview
 
-This project is a prototype Agent Skill for [Google AI Edge Gallery](https://github.com/google-ai-edge/gallery). It is designed to answer questions such as:
+This project is an Agent Skill built according to the official [Google AI Edge Gallery Skills Specification](https://github.com/google-ai-edge/gallery/tree/main/skills). It is designed to answer questions such as:
 
 - “Are there any weather alerts tomorrow in Bologna?”
 - “What risks affect my area today?”
 - “Show me the current Civil Protection alerts for my location.”
 
-The skill will cover the whole of Italy, resolve locations to official alert zones, and return both a concise AI answer and an interactive visual dashboard.
+The skill covers the whole of Italy, resolves locations to official alert zones, and returns both a concise AI answer and an interactive visual dashboard rendered directly on-device.
 
 ## 🖼️ UI Preview
 
@@ -38,12 +38,25 @@ The following screenshot illustrates the live on-device response experience insi
 - ♿ Use text, labels, icons, and patterns in addition to colors.
 - 🛡️ Never infer an official alert from a generic weather forecast.
 
-## 🧱 Architecture
+## 🧱 Architecture & Official Standards
 
-1. **Direct client-side query (on-demand)**: The Edge Gallery JavaScript skill queries the official Open Data repository of the Italian Civil Protection ([`pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica`](https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica)) directly from the device.
-2. **Zero backend dependency**: No private server, proxy, or scheduled workflow required; the skill runs 100% autonomously on-device for any user.
-3. **Local caching & parsing**: The skill fetches the latest official national bulletin JSON (~3 KB), caches it locally in `sessionStorage`/`localStorage`, and parses risks, zones, and severity levels.
-4. **Visual inline dashboard**: Returns structured data to the local AI model plus an inline mobile WebView dashboard including detail cards, source metadata, and the official daily national alert map preview.
+This skill is engineered strictly adhering to the [AI Edge Gallery Agent Skills Guide](https://github.com/google-ai-edge/gallery/tree/main/skills):
+
+- **Declarative Contract (`SKILL.md`)**: Configured with frontmatter metadata (`name`, `description`, `metadata.homepage`) and prompt instructions with JSON schemas for LLM tool invocation.
+- **Headless Logic Runner (`scripts/index.html`)**: Implements the globally exposed `window.ai_edge_gallery_get_result(data)` asynchronous entry point. It runs silently in a hidden mobile webview to fetch live Civil Protection bulletins, resolve Italian municipalities to alert zones, and handle caching.
+- **Interactive Inline WebView (`assets/webview.html`)**: Employs the official `webview` response schema (`url` and `aspectRatio`) to stream a dynamic, touch-friendly dashboard directly into the chat interface.
+- **Direct Client-Side Query**: Queries the official Open Data repository of the Italian Civil Protection ([`pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica`](https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica)) directly from the device.
+- **Zero Backend Dependency**: 100% decentralized and autonomous on-device execution. Does not require any external proxies, backends, or API keys.
+
+```text
+skills/italian-weather-alerts/
+├── SKILL.md                 # Agent instructions & tool schema
+├── scripts/
+│   └── index.html           # Headless background logic runner (DPC Open Data query & cache)
+└── assets/
+    ├── webview.html         # Interactive mobile chat UI dashboard
+    └── flag-it.svg          # Local asset icons
+```
 
 ## 📚 Data principles
 
@@ -54,9 +67,9 @@ The following screenshot illustrates the live on-device response experience insi
 
 ## 🚧 Project status
 
-This repository currently contains the concept documentation and visual prototype. The ingestion pipeline, national zone mapping, Edge Gallery skill implementation, automated tests, and deployment workflow will be added incrementally.
+The core skill implementation, DPC bulletin ingestion logic, national zone resolution, and responsive inline mobile dashboard are fully implemented and verified on physical devices (see preview above).
 
-See [Implementation evolution](docs/implementation-evolution.md) for the proposed roadmap.
+For further roadmap items and deep dives, see [Implementation evolution](docs/implementation-evolution.md).
 
 ## ⚠️ Disclaimer
 
