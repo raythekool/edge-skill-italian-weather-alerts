@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Italian Weather Alerts</title>
 <style>
-:root { color-scheme: light dark; --bg:#f5f5f7; --card:#fff; --text:#151515; --muted:#666; --line:#ddd; }
-@media (prefers-color-scheme:dark) { :root { --bg:#151515; --card:#252525; --text:#f5f5f7; --muted:#bbb; --line:#444; } }
+:root { color-scheme: light dark; --bg:#f5f5f7; --card:#fff; --text:#151515; --muted:#666; --line:#ddd; --accent:#0066cc; }
+@media (prefers-color-scheme:dark) { :root { --bg:#151515; --card:#252525; --text:#f5f5f7; --muted:#bbb; --line:#444; --accent:#4da3ff; } }
 * { box-sizing:border-box; }
 body { margin:0; padding:16px; background:var(--bg); color:var(--text); font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 main { max-width:680px; margin:auto; }
@@ -19,6 +19,38 @@ p { margin:7px 0; }
 .live { background:#d8f5df; color:#176b2b; }
 .demo { background:#ffe6b8; color:#7a4700; }
 .stale { background:#ffd9d9; color:#8b1111; }
+
+.tabs {
+  display: flex;
+  background: var(--bg);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+  margin: 14px 0 6px;
+  border: 1px solid var(--line);
+}
+.tab {
+  flex: 1;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tab.active {
+  background: var(--card);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  color: var(--accent);
+}
+
 .alert { border-left:7px solid #999; padding:13px; border-radius:12px; margin-top:10px; background:#00000008; }
 .alert.none { border-color:#28a745; }
 .alert.yellow { border-color:#f0c400; }
@@ -43,18 +75,27 @@ p { margin:7px 0; }
   let payload = {};
   try { payload = JSON.parse(params.get("payload") || "{}"); } catch (_) { payload = {}; }
   const app = document.getElementById("app");
-  const alerts = Array.isArray(payload.alerts) ? payload.alerts : [];
-  const status = payload.status || "unknown";
-  const quality = payload.dataQuality || {};
-  const maxLevel = alerts.reduce((current, item) => rank(item.level) > rank(current) ? item.level : current, "none");
-  const statusText = status === "live" ? "DATI UFFICIALI DPC (LIVE)" : "DATI DIMOSTRATIVI";
-  const source = (payload.sourceUrls || [])[0] || "";
-  const warning = (quality.warnings || []).join(" ");
-  const dateLabel = payload.date === "tomorrow" ? "Domani" : "Oggi";
+  
+  let activeDay = payload.date === "tomorrow" ? "tomorrow" : "today";
 
-  app.innerHTML = `
-    <section class="card">
-      <div class="header">
+  function render() {
+    const dayInfo = (payload.days && payload.days[activeDay]) ? payload.days[activeDay] : {
+      alerts: payload.alerts || [],
+      mapUrl: payload.mapUrl || null
+    };
+    const alerts = dayInfo.alerts || [];
+    const mapUrl = dayInfo.mapUrl || payload.mapUrl || null;
+    const status = payload.status || "unknown";
+    const quality = payload.dataQuality || {};
+    const maxLevel = alerts.reduce((current, item) => rank(item.level) > rank(current) ? item.level : current, "none");
+    const statusText = status === "live" ? "DATI UFFICIALI DPC (LIVE)" : "DATI DIMOSTRATIVI";
+    const source = (payload.sourceUrls || [])[0] || "";
+    const warning = (quality.warnings || []).join(" ");
+    const dateLabel = activeDay === "tomorrow" ? "Domani" : "Oggi";
+
+    app.innerHTML = `
+      <section class="card">
+        <div class="header">
           <h1 style="display:flex; align-items:center; gap:8px;">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" width="26" height="18" style="border-radius:3px; box-shadow:0 1px 3px rgba(0,0,0,0.25); flex-shrink:0;">
               <rect width="1" height="2" fill="#009246"/>
@@ -63,41 +104,57 @@ p { margin:7px 0; }
             </svg>
             <span>Allerte Protezione Civile</span>
           </h1>
-          <h2>${escapeHtml(payload.location || "Italia")}</h2>
+          <span class="badge ${status === "live" ? "live" : "demo"}">${escapeHtml(statusText)}</span>
         </div>
-        <span class="badge ${status === "live" ? "live" : "demo"}">${escapeHtml(statusText)}</span>
-      </div>
-      <p style="margin-top:10px;">
-        <strong>${escapeHtml(labelLevel(maxLevel))}</strong> · <span>${escapeHtml(dateLabel)}</span>
-      </p>
-      ${warning ? `<div class="warn">⚠️ ${escapeHtml(warning)}</div>` : ""}
-    </section>
+        <h2 style="margin-top:4px;">${escapeHtml(payload.location || "Italia")}</h2>
 
-    <section class="card">
-      <h2>Dettaglio Rischi e Allerte</h2>
-      ${alerts.length ? alerts.map(renderAlert).join("") : `<p>Nessun record di allerta registrato.</p>`}
-    </section>
-
-    <section class="card">
-      <h2>Mappa Nazionale di Criticità</h2>
-      ${payload.mapUrl ? `
-        <div class="map-box">
-          <img src="${escapeAttr(payload.mapUrl)}" alt="Mappa ufficiale allerta Protezione Civile" class="map-img" loading="lazy">
+        <div class="tabs">
+          <button type="button" class="tab ${activeDay === 'today' ? 'active' : ''}" onclick="switchDay('today')">
+            ☀️ Oggi
+          </button>
+          <button type="button" class="tab ${activeDay === 'tomorrow' ? 'active' : ''}" onclick="switchDay('tomorrow')">
+            📅 Domani
+          </button>
         </div>
-        <p class="meta" style="margin-top:8px;">Mappa ufficiale di criticità pubblicata dal Dipartimento della Protezione Civile per ${escapeHtml(dateLabel.toLowerCase())}.</p>
-      ` : `
-        <div class="map-box" style="padding:40px; text-align:center; color:var(--muted);">🗺️ Mappa cartografica non disponibile per questa selezione.</div>
-      `}
-    </section>
 
-    <section class="card">
-      <h2>Fonte e Aggiornamento</h2>
-      <p class="meta">
-        Bollettino: ${escapeHtml(payload.bulletin?.name || payload.bulletin?.issuedAt || "Non disponibile")}<br>
-        Emesso il: ${escapeHtml(payload.bulletin?.issuedAt || "Non disponibile")}<br>
-        Fonte dati: ${source ? `<a href="${escapeAttr(source)}" target="_blank" rel="noopener">Dipartimento della Protezione Civile ↗</a>` : "Protezione Civile"}
-      </p>
-    </section>`;
+        <p style="margin-top:10px;">
+          <strong>${escapeHtml(labelLevel(maxLevel))}</strong> · <span>${escapeHtml(dateLabel)}</span>
+        </p>
+        ${warning ? `<div class="warn">⚠️ ${escapeHtml(warning)}</div>` : ""}
+      </section>
+
+      <section class="card">
+        <h2>Dettaglio Rischi per ${escapeHtml(dateLabel)}</h2>
+        ${alerts.length ? alerts.map(renderAlert).join("") : `<p>Nessun record di allerta registrato.</p>`}
+      </section>
+
+      <section class="card">
+        <h2>Mappa Nazionale di Criticità (${escapeHtml(dateLabel)})</h2>
+        ${mapUrl ? `
+          <div class="map-box">
+            <img src="${escapeAttr(mapUrl)}" alt="Mappa ufficiale allerta Protezione Civile per ${escapeAttr(dateLabel)}" class="map-img" loading="lazy">
+          </div>
+          <p class="meta" style="margin-top:8px;">Mappa ufficiale pubblicata dal Dipartimento della Protezione Civile per ${escapeHtml(dateLabel.toLowerCase())}.</p>
+        ` : `
+          <div class="map-box" style="padding:40px; text-align:center; color:var(--muted);">🗺️ Mappa cartografica non disponibile per questa data.</div>
+        `}
+      </section>
+
+      <section class="card">
+        <h2>Fonte e Aggiornamento</h2>
+        <p class="meta">
+          Bollettino: ${escapeHtml(payload.bulletin?.name || payload.bulletin?.issuedAt || "Non disponibile")}<br>
+          Data emissione: ${escapeHtml(payload.bulletin?.issuedAt || "Non disponibile")}<br>
+          Fonte dati: ${source ? `<a href="${escapeAttr(source)}" target="_blank" rel="noopener">Dipartimento della Protezione Civile ↗</a>` : "Protezione Civile"}
+        </p>
+      </section>`;
+  }
+
+  window.switchDay = function(day) {
+    if (activeDay === day) return;
+    activeDay = day;
+    render();
+  };
 
   function renderAlert(item) {
     const level = normalize(item.level || "none");
@@ -125,6 +182,8 @@ p { margin:7px 0; }
   }
   function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c])); }
   function escapeAttr(value) { return escapeHtml(value).replace(/javascript:/gi, ""); }
+
+  render();
 </script>
 </body>
 </html>

@@ -38,16 +38,38 @@
         throw new Error("Impossibile recuperare i dati dei bollettini di allerta.");
       }
 
-      let alerts = [];
       let bulletinInfo = null;
-      let mapUrl = null;
+      let dayDataToday = { alerts: [], mapUrl: null };
+      let dayDataTomorrow = { alerts: [], mapUrl: null };
 
       if (dataStatus === "live") {
-        const isToday = (date === "today");
-        const dayData = isToday ? bulletinData.today : bulletinData.tomorrow;
-        const html = dayData?.html_descrition || "";
-        const allAlerts = parseAlertHtml(html, date);
-        alerts = filterAlerts(allAlerts, location);
+        const htmlToday = bulletinData.today?.html_descrition || "";
+        const htmlTomorrow = bulletinData.tomorrow?.html_descrition || "";
+
+        let alertsToday = filterAlerts(parseAlertHtml(htmlToday, "today"), location);
+        let alertsTomorrow = filterAlerts(parseAlertHtml(htmlTomorrow, "tomorrow"), location);
+
+        if (alertsToday.length === 0) {
+          alertsToday.push({
+            day: "today",
+            region: location,
+            zone: "Tutto il territorio",
+            risk: "Nessun rischio significativo",
+            level: "none",
+            description: "Assenza di fenomeni significativi prevedibili / Nessuna allerta di criticità per oggi."
+          });
+        }
+
+        if (alertsTomorrow.length === 0) {
+          alertsTomorrow.push({
+            day: "tomorrow",
+            region: location,
+            zone: "Tutto il territorio",
+            risk: "Nessun rischio significativo",
+            level: "none",
+            description: "Assenza di fenomeni significativi prevedibili / Nessuna allerta di criticità per domani."
+          });
+        }
 
         bulletinInfo = {
           name: bulletinData.name || "Bollettino di Criticità Nazionale",
@@ -55,27 +77,32 @@
           validDay: date
         };
 
+        let mapUrlToday = null;
+        let mapUrlTomorrow = null;
         if (bulletinData._baseName) {
-          const mapSuffix = isToday ? "oggi.png" : "domani.png";
-          mapUrl = `${DPC_REPO_RAW}/files/preview/${bulletinData._baseName}_${mapSuffix}`;
+          mapUrlToday = `${DPC_REPO_RAW}/files/preview/${bulletinData._baseName}_oggi.png`;
+          mapUrlTomorrow = `${DPC_REPO_RAW}/files/preview/${bulletinData._baseName}_domani.png`;
         }
+
+        dayDataToday = { alerts: alertsToday, mapUrl: mapUrlToday };
+        dayDataTomorrow = { alerts: alertsTomorrow, mapUrl: mapUrlTomorrow };
       } else {
         // Fallback su dati dimostrativi
-        alerts = filterAlerts(bulletinData.alerts || [], location);
+        const demoToday = filterAlerts((bulletinData.alerts || []).filter(a => a.day === "today"), location);
+        const demoTomorrow = filterAlerts((bulletinData.alerts || []).filter(a => a.day === "tomorrow"), location);
+        dayDataToday = {
+          alerts: demoToday.length ? demoToday : [{ day: "today", level: "none", risk: "Nessuna allerta", description: "Dati demo: nessuna allerta per oggi." }],
+          mapUrl: null
+        };
+        dayDataTomorrow = {
+          alerts: demoTomorrow.length ? demoTomorrow : [{ day: "tomorrow", level: "none", risk: "Nessuna allerta", description: "Dati demo: nessuna allerta per domani." }],
+          mapUrl: null
+        };
         bulletinInfo = bulletinData.bulletin || { issuedAt: "demo" };
       }
 
-      // Se non ci sono allerte per la zona richiesta o a livello nazionale
-      if (alerts.length === 0) {
-        alerts.push({
-          day: date,
-          region: location,
-          zone: "Tutto il territorio",
-          risk: "Nessun rischio significativo",
-          level: "none",
-          description: "Assenza di fenomeni significativi prevedibili / Nessuna allerta di criticità per la data selezionata."
-        });
-      }
+      const isToday = (date === "today");
+      const currentDayData = isToday ? dayDataToday : dayDataTomorrow;
 
       const payload = {
         status: dataStatus,
@@ -87,8 +114,12 @@
           warnings
         },
         bulletin: bulletinInfo,
-        alerts,
-        mapUrl,
+        alerts: currentDayData.alerts,
+        mapUrl: currentDayData.mapUrl,
+        days: {
+          today: dayDataToday,
+          tomorrow: dayDataTomorrow
+        },
         sourceUrls: [
           "https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica",
           "https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/"
