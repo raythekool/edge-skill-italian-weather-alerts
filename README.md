@@ -20,7 +20,9 @@ The skill will cover the whole of Italy, resolve locations to official alert zon
 
 The following screenshot illustrates the live on-device response experience inside a Google AI Edge Gallery chat for the municipality of **Segrate (Milano, Lombardia)**:
 
-![Italian Weather Alerts UI](docs/mockups/italian-weather-alerts-preview.jpg)
+<p align="center">
+  <img src="docs/mockups/italian-weather-alerts-preview.jpg" width="60%" alt="Italian Weather Alerts UI (Segrate Demo)">
+</p>
 
 > ℹ️ Captured directly from the app interface showing decentralized on-device fetching of official DPC critical alert bulletins, interactive day toggle (Oggi/Domani), and national alert maps.
 
