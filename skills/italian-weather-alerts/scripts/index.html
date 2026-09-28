@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Italian Weather Alerts Skill Runner</title>
+</head>
+<body>
+<script>
+  const LIVE_DATA_URL = "";
+  const DEMO_DATA_URL = "../assets/demo-data.json";
+
+  window["ai_edge_gallery_get_result"] = async (data) => {
+    try {
+      const request = typeof data === "string" ? JSON.parse(data) : (data || {});
+      const location = String(request.location || "Italy").trim();
+      const date = request.date || "today";
+      const includeForecast = Boolean(request.includeForecast);
+      const source = LIVE_DATA_URL || DEMO_DATA_URL;
+      const response = await fetch(source, { cache: "no-store" });
+      if (!response.ok) throw new Error(`Data request failed with HTTP ${response.status}`);
+      const dataset = await response.json();
+      const matches = filterAlerts(dataset.alerts || [], location, date);
+      const dataStatus = LIVE_DATA_URL ? "live" : "demo";
+      const payload = {
+        status: dataStatus,
+        location,
+        date,
+        includeForecast,
+        dataQuality: dataset.dataQuality || { status: "unknown", warnings: [] },
+        bulletin: dataset.bulletin || null,
+        alerts: matches,
+        sourceUrls: dataset.sourceUrls || [],
+        generatedAt: dataset.generatedAt || null
+      };
+      const webviewUrl = `../assets/webview.html?payload=${encodeURIComponent(JSON.stringify(payload))}`;
+      return JSON.stringify({
+        result: JSON.stringify(payload),
+        webview: { url: webviewUrl, aspectRatio: 0.72 }
+      });
+    } catch (error) {
+      console.error(error);
+      return JSON.stringify({ error: `Italian weather alerts skill failed: ${error.message}` });
+    }
+  };
+
+  function normalize(value) {
+    return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+
+  function filterAlerts(alerts, location, date) {
+    const query = normalize(location);
+    const wantedDate = date === "today" || date === "tomorrow" ? date : date;
+    return alerts.filter(alert => {
+      const searchable = normalize([
+        alert.date, alert.day, alert.municipality, alert.province,
+        alert.region, alert.zone, alert.zoneId, alert.risk, alert.level
+      ].join(" "));
+      const dateMatches = wantedDate === "today" || wantedDate === "tomorrow"
+        ? alert.day === wantedDate
+        : alert.date === wantedDate;
+      const locationMatches = query === "italy" || query === "italia" || searchable.includes(query);
+      return dateMatches && locationMatches;
+    });
+  }
+</script>
+</body>
+</html>

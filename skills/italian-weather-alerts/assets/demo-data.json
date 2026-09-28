@@ -1,0 +1,14 @@
+{
+  "generatedAt": "demo",
+  "bulletin": { "issuedAt": "demo", "validFrom": "demo", "validTo": "demo" },
+  "sourceUrls": ["https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/"],
+  "dataQuality": { "status": "demo", "warnings": ["Demo values only; live ingestion is not configured."] },
+  "alerts": [
+    {
+      "day": "tomorrow", "date": "2099-01-01", "municipality": "Bologna", "province": "BO", "region": "Emilia-Romagna", "zone": "Demo zone", "zoneId": "DEMO", "risk": "Hydrogeological risk", "level": "orange", "description": "Fictional demonstration alert.", "validFrom": "demo", "validTo": "demo"
+    },
+    {
+      "day": "tomorrow", "date": "2099-01-01", "municipality": "Bologna", "province": "BO", "region": "Emilia-Romagna", "zone": "Demo zone", "zoneId": "DEMO", "risk": "Thunderstorms", "level": "yellow", "description": "Fictional demonstration alert.", "validFrom": "demo", "validTo": "demo"
+    }
+  ]
+}
