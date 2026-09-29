@@ -58,6 +58,20 @@ Puoi aggiungere questa skill a **Google AI Edge Gallery** in 3 semplici passaggi
 
 ## 📖 Reference: Domande, Rischi e Fonti Dati
 
+### Come è Strutturata la Skill
+La skill rispetta l'architettura a tre livelli prevista dalle specifiche ufficiali di Google AI Edge Gallery:
+
+```text
+skills/italian-weather-alerts/
+├── SKILL.md             # Contratto dell'Agente: Prompt di sistema, regole geografiche e schemi JSON
+├── scripts/             # Runner Headless: Interrogazione diretta degli Open Data DPC e cache locale
+└── assets/              # Dashboard Mobile: Scheda grafica touch-friendly con livelli di criticità e mappe
+```
+
+- **`SKILL.md` (Contratto dell'Agente)**: Istruisce il modello locale su come interrogare i dati istituzionali e vieta categoricamente di inventare allerte da previsioni generiche.
+- **`scripts/` (Runner Headless)**: Viene eseguito in background sul telefono per scaricare i bollettini GeoJSON della Protezione Civile e mappare i comuni sulle zone di allerta ufficiali.
+- **`assets/` (Dashboard Mobile)**: Renderizza la scheda grafica touch-friendly con i codici colore di criticità, il dettaglio dei rischi e le mappe nazionali direttamente nella chat.
+
 ### Esempi di domande utili
 - *"Ci sono allerte allagamenti o pioggia oggi a Genova?"*
 - *"Mostrami le allerte temporali per domani a Roma."*

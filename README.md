@@ -58,6 +58,20 @@ You can add this skill to the **Google AI Edge Gallery** app in 3 simple steps:
 
 ## 📖 Reference: Prompts, Risks & Data Sources
 
+### How the Skill is Structured
+The skill follows the standard 3-tier architecture defined by the Google AI Edge Gallery specification:
+
+```text
+skills/italian-weather-alerts/
+├── SKILL.md             # Agent Contract: System prompt, geo-resolution rules, and tool schemas
+├── scripts/             # Headless Runner: Direct client-side DPC Open Data querying & caching
+└── assets/              # Interactive UI: Responsive mobile card with alert levels & national maps
+```
+
+- **`SKILL.md` (Agent Contract)**: Instructs the local model on how to query official data and strictly forbids inventing alerts from generic forecasts.
+- **`scripts/` (Headless Runner)**: Executes asynchronously in the background on device to fetch live Civil Protection GeoJSON bulletins and map municipalities to official alert zones.
+- **`assets/` (Mobile Dashboard)**: Renders the touch-friendly inline card with color-coded risk levels, detailed descriptions, and national maps directly inside the chat.
+
 ### Example Prompts
 - *"Are there any flood or rain alerts in Genoa today?"*
 - *"Show me thunderstorm warnings for tomorrow in Rome."*
