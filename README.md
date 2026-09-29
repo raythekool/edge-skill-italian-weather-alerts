@@ -42,6 +42,14 @@ The on-device model automatically resolves the municipality to its official aler
 
 ## 🛠️ How-To Guides: Installation & Daily Use
 
+### ⚡ 1-Click Quick Add
+[![Add Skill to Google AI Edge Gallery](https://img.shields.io/badge/📲%20Add%20Skill%20to-Google%20AI%20Edge%20Gallery-0284c7?style=for-the-badge&logo=google)](https://raythekool.github.io/edge-skill-italian-weather-alerts/skills/italian-weather-alerts/)
+
+**Skill URL to paste in the app:**
+```text
+https://raythekool.github.io/edge-skill-italian-weather-alerts/skills/italian-weather-alerts/
+```
+
 ### How to Install on Your Phone (Android & iOS)
 You can add this skill to the **Google AI Edge Gallery** app in 3 simple steps:
 
