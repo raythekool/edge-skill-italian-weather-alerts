@@ -87,7 +87,7 @@
         dayDataToday = { alerts: alertsToday, mapUrl: mapUrlToday };
         dayDataTomorrow = { alerts: alertsTomorrow, mapUrl: mapUrlTomorrow };
       } else {
-        // Fallback su dati dimostrativi
+        // Fallback to demonstration data
         const demoToday = filterAlerts((bulletinData.alerts || []).filter(a => a.day === "today"), location);
         const demoTomorrow = filterAlerts((bulletinData.alerts || []).filter(a => a.day === "tomorrow"), location);
         dayDataToday = {

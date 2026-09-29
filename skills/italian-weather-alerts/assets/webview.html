@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -127,28 +127,28 @@ p { margin:7px 0; }
       </section>
 
       <section class="card">
-        <h2>Dettaglio Rischi per ${escapeHtml(dateLabel)}</h2>
-        ${alerts.length ? alerts.map(renderAlert).join("") : `<p>Nessun record di allerta registrato.</p>`}
+        <h2>Risk Details for ${escapeHtml(dateLabel)}</h2>
+        ${alerts.length ? alerts.map(renderAlert).join("") : `<p>No active alerts recorded.</p>`}
       </section>
 
       <section class="card">
-        <h2>Mappa Nazionale di Criticità (${escapeHtml(dateLabel)})</h2>
+        <h2>National Criticality Map (${escapeHtml(dateLabel)})</h2>
         ${mapUrl ? `
           <div class="map-box">
             <img src="${escapeAttr(mapUrl)}" alt="Mappa ufficiale allerta Protezione Civile per ${escapeAttr(dateLabel)}" class="map-img" loading="lazy">
           </div>
-          <p class="meta" style="margin-top:8px;">Mappa ufficiale pubblicata dal Dipartimento della Protezione Civile per ${escapeHtml(dateLabel.toLowerCase())}.</p>
+          <p class="meta" style="margin-top:8px;">Official alert map published by the Italian Department of Civil Protection for ${escapeHtml(dateLabel.toLowerCase())}.</p>
         ` : `
-          <div class="map-box" style="padding:40px; text-align:center; color:var(--muted);">🗺️ Mappa cartografica non disponibile per questa data.</div>
+          <div class="map-box" style="padding:40px; text-align:center; color:var(--muted);">🗺️ Cartographic map not available for this date.</div>
         `}
       </section>
 
       <section class="card">
-        <h2>Fonte e Aggiornamento</h2>
+        <h2>Source & Freshness</h2>
         <p class="meta">
-          Bollettino: ${escapeHtml(payload.bulletin?.name || payload.bulletin?.issuedAt || "Non disponibile")}<br>
-          Data emissione: ${escapeHtml(payload.bulletin?.issuedAt || "Non disponibile")}<br>
-          Fonte dati: ${source ? `<a href="${escapeAttr(source)}" target="_blank" rel="noopener">Dipartimento della Protezione Civile ↗</a>` : "Protezione Civile"}
+          Bulletin: ${escapeHtml(payload.bulletin?.name || payload.bulletin?.issuedAt || "Not available")}<br>
+          Issued at: ${escapeHtml(payload.bulletin?.issuedAt || "Not available")}<br>
+          Data source: ${source ? `<a href="${escapeAttr(source)}" target="_blank" rel="noopener">Department of Civil Protection (DPC) ↗</a>` : "Civil Protection"}
         </p>
       </section>`;
   }
@@ -165,10 +165,10 @@ p { margin:7px 0; }
     return `
       <article class="alert ${escapeAttr(level)}">
         <div class="level">${escapeHtml(riskTitle)} — ${escapeHtml(labelLevel(item.level))}</div>
-        <div>${escapeHtml(item.description || "Nessuna descrizione disponibile.")}</div>
+        <div>${escapeHtml(item.description || "No description available.")}</div>
         <div class="meta" style="margin-top:4px;">
-          ${item.region ? `Regione: <strong>${escapeHtml(item.region)}</strong>` : ""}
-          ${item.zone ? ` · Zona: ${escapeHtml(item.zone)}` : ""}
+          ${item.region ? `Region: <strong>${escapeHtml(item.region)}</strong>` : ""}
+          ${item.zone ? ` · Zone: ${escapeHtml(item.zone)}` : ""}
         </div>
       </article>`;
   }
