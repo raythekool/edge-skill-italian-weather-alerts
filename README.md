@@ -2,31 +2,32 @@
 
 > 🇮🇹 Leggi la versione in Italiano: [README.it.md](README.it.md)
 
-A Google AI Edge Gallery Agent Skill for querying official **Italian Civil Protection** weather alerts and displaying localized risk bulletins and cartographic maps directly on an interactive on-device mobile dashboard.
+An on-device Agent Skill for the **Google AI Edge Gallery** mobile app (available on Android & iOS) that queries official **Italian Civil Protection** emergency bulletins and displays localized risk levels and national criticality maps directly on an interactive in-chat mobile dashboard.
 
-![Status](https://img.shields.io/badge/status-active-brightgreen)
-![Platform](https://img.shields.io/badge/platform-Google%20AI%20Edge%20Gallery-blue)
-![Coverage](https://img.shields.io/badge/coverage-Italy-green)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square)](https://github.com/raythekool/edge-skill-italian-weather-alerts)
+[![Platform](https://img.shields.io/badge/Platform-Google%20AI%20Edge%20Gallery-blue?style=flat-square)](https://github.com/google-ai-edge/gallery)
+[![Device](https://img.shields.io/badge/Supported-Android%20%7C%20iOS-orange?style=flat-square)](https://github.com/raythekool/edge-skill-italian-weather-alerts)
+[![Coverage](https://img.shields.io/badge/Coverage-Italy%20(All%20Municipalities)-green?style=flat-square)](https://github.com/raythekool/edge-skill-italian-weather-alerts)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](https://github.com/raythekool/edge-skill-italian-weather-alerts)
 
 ---
 
 ## 🖼️ Mobile UI Preview
 
-The following screenshot illustrates the live on-device response experience inside a Google AI Edge Gallery chat for the municipality of **Segrate (Milano, Lombardia)**:
+Here is how the skill appears live inside a **Google AI Edge Gallery** chat on a mobile phone (example for the municipality of **Segrate, Milan**):
 
 <p align="center">
   <img src="docs/mockups/italian-weather-alerts-preview.png" width="50%" alt="Italian Weather Alerts UI (Segrate Demo)">
 </p>
 
-> ℹ️ Captured directly from the app interface: decentralized on-device fetching of official DPC critical alert bulletins, interactive day toggle (Today/Tomorrow), and official national alert maps.
+> ℹ️ Captured directly on device: decentralized fetching of official Civil Protection bulletins, interactive day toggle (Today/Tomorrow), and official cartographic alert maps.
 
 ---
 
-## 📚 Tutorials (Learning-Oriented)
+## 📚 Tutorials: Getting Started with Weather Alerts
 
-### Getting Started: Querying Alerts
-You can query the skill using natural conversational language for any Italian municipality:
+### Asking Your First Question
+Once the skill is enabled, simply ask your phone in plain language:
 
 1. **Specific municipality**:
    > *"Are there any weather alerts tomorrow in Bologna?"*
@@ -35,86 +36,66 @@ You can query the skill using natural conversational language for any Italian mu
 3. **Regional overview & map**:
    > *"Show me Civil Protection alerts and the national map for Tuscany."*
 
-The on-device model resolves the municipality to its official alert zone, queries official Civil Protection datasets, and renders both a concise summary and an **interactive, touch-friendly inline dashboard**.
+The on-device model automatically resolves the municipality to its official alert zone, fetches live data directly from the Civil Protection repository, and returns a clear text summary with an **interactive visual card**.
 
 ---
 
-## 🛠️ How-To Guides (Task-Oriented)
+## 🛠️ How-To Guides: Installation & Daily Use
 
-### How to Install on Google AI Edge Gallery
+### How to Install on Your Phone (Android & iOS)
+You can add this skill to the **Google AI Edge Gallery** app in 3 simple steps:
 
-You can load this skill onto your Android device using either method:
-
-#### Method 1: Local Import via ADB
-1. Connect your Android device with **USB Debugging** enabled.
-2. Push the skill directory to your device's Download folder:
-   ```bash
-   adb push skills/italian-weather-alerts/ /sdcard/Download/
-   ```
-3. Inside the **Google AI Edge Gallery** app, tap **Import local skill** and select the `italian-weather-alerts` folder.
-
-#### Method 2: Import via URL (GitHub Pages)
-1. Open the **Skill Manager** in the AI Edge Gallery app.
-2. Enter the public skill URL:
+1. **Open Google AI Edge Gallery** on your Android device or iPhone.
+2. In the menu, go to **Agent Skills** (or **Skill Manager**).
+3. Tap **Add Skill** > **From URL** (or **Remote URL**).
+4. Paste the official skill link:
    ```text
    https://raythekool.github.io/edge-skill-italian-weather-alerts/skills/italian-weather-alerts/
    ```
+5. Tap **Add / Confirm**. You can now ask questions about Italian weather alerts in any chat!
 
 ---
 
-## 📖 Reference (Information-Oriented)
+## 📖 Reference: Prompts, Risks & Data Sources
 
-### Directory Structure
+### Example Prompts
+- *"Are there any flood or rain alerts in Genoa today?"*
+- *"Show me thunderstorm warnings for tomorrow in Rome."*
+- *"What is the alert level in Florence right now?"*
+- *"Display the national Civil Protection map for tomorrow."*
 
-```text
-skills/italian-weather-alerts/
-├── SKILL.md                 # Declarative contract, system prompt, and JSON schemas
-├── scripts/
-│   └── index.html           # Headless logic runner (DPC Open Data querying & client caching)
-└── assets/
-    ├── webview.html         # Interactive mobile chat UI dashboard
-    └── flag-it.svg          # Local visual assets
-```
+### Official Alert Levels
+- 🟢 **Green (Verde)**: Absence of significant predictable criticality.
+- 🟡 **Yellow (Giallo)**: Ordinary criticality (localized flooding, sudden severe storms, minor landslides).
+- 🟠 **Orange (Arancione)**: Moderate criticality (widespread, hazardous, and prolonged weather events).
+- 🔴 **Red (Rosso)**: High criticality (severe and extensive danger to public safety).
 
-### Tool Invocation Schema (`run_js`)
-The LLM invokes the headless runner `index.html` via `run_js` passing the following JSON payload:
+### Covered Risk Categories
+- **Hydrogeological (Idrogeologico)**: Landslides, mudslides, and runoff caused by heavy rainfall.
+- **Hydraulic (Idraulico)**: River flooding, watercourse overflow, and structural bank failures.
+- **Severe Thunderstorms (Temporali)**: Rapid, violent convective storms with hail and wind gusts.
 
-| Field | Type | Description | Default |
-| :--- | :--- | :--- | :--- |
-| `location` | `String` | Municipality, province, region, or alert zone (e.g. `"Bologna"`) | Required |
-| `date` | `String` | `"today"`, `"tomorrow"`, or ISO date (`"YYYY-MM-DD"`) | `"today"` |
-| `includeForecast` | `Boolean` | Whether to include generic weather forecast info alongside official alerts | `false` |
-
-Example:
-```json
-{"location": "Bologna", "date": "tomorrow", "includeForecast": false}
-```
-
-### Official Open Data Sources
-- DPC Open Data Repository: [`pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica`](https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica)
-- National Risk Maps Portal: [Civil Protection Criticality Maps](https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/)
+### Official Authoritative Sources
+All data is ingested directly from the official open-data repositories published daily by the **Italian Department of Civil Protection (DPC)**:
+- Open Data Repository: [`pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica`](https://github.com/pcm-dpc/DPC-Bollettini-Criticita-Idrogeologica-Idraulica)
+- Official DPC Maps: [Mappe Rischi Protezione Civile](https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/)
 
 ---
 
-## 🧠 Explanation (Understanding-Oriented)
+## 🧠 Explanation: Why Official Bulletins & Zero-Backend?
 
-### Why a Zero-Backend, On-Device Architecture?
-Unlike conventional weather applications that depend on centralized servers, paid API keys, or intermediate databases:
-- **100% Privacy & Decentralization**: The user's device requests raw GeoJSON datasets directly from the Civil Protection repository on GitHub.
-- **Resilience**: Zero backend proxies. Geographic zone resolution and GeoJSON parsing occur entirely within the headless webview runtime on-device.
+### 1. Official Safety Bulletins vs Standard Weather Forecasts
+Commercial weather forecast apps predict rainfall probability, but they do not reflect institutional risk levels. This skill connects directly to the **official emergency alerts** issued by regional and national authorities, ensuring you receive authoritative, verified public safety data.
 
-### Official Alerts vs Generic Weather Forecasts
-A fundamental design pillar is strictly distinguishing **ordinary meteorological predictions** (e.g., "it might rain in Rome tomorrow") from **official civil protection criticality warnings**:
-- **Green**: Absence of significant predictable risks.
-- **Yellow**: Ordinary criticality (localized flooding, sudden severe thunderstorms).
-- **Orange**: Moderate criticality (widespread and hazardous phenomena).
-- **Red**: High criticality (severe danger to public safety).
+### 2. Zero-Backend & Complete Privacy
+This skill does not rely on third-party tracking servers or proprietary APIs:
+- Your queries and locations remain private on your device.
+- The phone fetches raw government open data directly from GitHub and resolves municipal zones locally.
 
-### Anti-Hallucination Principles
-System instructions in `SKILL.md` strictly prohibit the AI from guessing or synthesizing unofficial alert levels. If data is stale or unavailable, the skill reports it explicitly.
+### 3. Strict Anti-Hallucination Policy
+The AI model is strictly prohibited from guessing or fabricating alert zones or risk levels. If data is unavailable or stale, it reports this transparently rather than inventing an answer.
 
 ---
 
 ## ⚠️ Disclaimer
-
-This project is a personal technical prototype and is not an emergency notification service. Always consult official Civil Protection and regional authorities for current information and follow official emergency instructions.
+*This project is an independent technical tool and is not an emergency dispatch or official broadcast service. In case of severe weather or emergency, always consult the official Civil Protection channels and follow local municipal instructions.*
