@@ -40,18 +40,15 @@ L'intelligenza artificiale sul dispositivo identifica il comune, mappa automatic
 
 ---
 
-## 🛠️ How-To Guides: Installazione e Utilizzo Quotidiano
+## 🛠️ How-To: Come Installare sullo Smartphone (Android & iOS)
 
-### ⚡ Aggiunta Rapida con 1 Click
-[![Aggiungi Skill a Google AI Edge Gallery](https://img.shields.io/badge/📲%20Aggiungi%20a-Google%20AI%20Edge%20Gallery-0284c7?style=for-the-badge&logo=google)](https://raythekool.github.io/edge-skill-italian-weather-alerts/skills/italian-weather-alerts/)
-
-**Indirizzo ufficiale della skill da incollare nell'app:**
-```text
-https://raythekool.github.io/edge-skill-italian-weather-alerts/skills/italian-weather-alerts/
-```
-
-### Come installare la Skill sul tuo Smartphone (Android & iOS)
 Puoi aggiungere questa skill a **Google AI Edge Gallery** in 3 semplici passaggi:
+
+<p align="left">
+  <a href="https://raythekool.github.io/edge-skill-italian-weather-alerts/skills/italian-weather-alerts/">
+    <img src="https://img.shields.io/badge/📲%20Aggiunta%20Rapida%20a-Google%20AI%20Edge%20Gallery-0284c7?style=for-the-badge&logo=google" alt="Aggiungi Skill a Google AI Edge Gallery">
+  </a>
+</p>
 
 1. **Apri Google AI Edge Gallery** sul tuo smartphone Android o iPhone.
 2. Nel menu, vai su **Agent Skills** (o **Skill Manager**).
